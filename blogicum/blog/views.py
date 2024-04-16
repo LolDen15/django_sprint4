@@ -1,27 +1,24 @@
-from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
-from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
-from .models import Category, Post, Comment
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.views.generic import (
     ListView,
     DetailView,
     CreateView,
     UpdateView,
     DeleteView,
-    View)
+    View
+)
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import PostForm, CommentForm, ProfileEditForm
-
+from .models import Category, Post, Comment
 
 User = get_user_model()
 
 POST_COUNT = 10
-
-
 
 
 class PostMixin:
@@ -96,7 +93,8 @@ class ProfileDetailView(ListView):
             self.model.objects.select_related('author')
             .filter(author__username=self.kwargs['username'])
             .annotate(comment_count=Count("comment"))
-            .order_by("-pub_date"))
+            .order_by("-pub_date")
+            .prefetch_related('category', 'location', 'author'))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -121,7 +119,7 @@ class PostDetailView(DetailView):
     model = Post
     template_name = 'blog/detail.html'
 
-    def get_object(self):
+    def get_object(self, *args, **kwargs):
         post_obj = get_object_or_404(
             Post,
             pk=self.kwargs['id']
@@ -157,13 +155,13 @@ class CategoryPostsListView(ListView):
         return (
             category.posts.select_related('location', 'author', 'category')
             .filter(
-            is_published=True,
-            pub_date__lte=timezone.now()
+                is_published=True,
+                pub_date__lte=timezone.now()
             )
             .annotate(comment_count=Count("comment"))
             .order_by("-pub_date"))
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
         context['category'] = get_object_or_404(
             Category.objects.values('id', 'title', 'description'),
@@ -246,7 +244,7 @@ class ProfilePasswordUpdateView(UpdateView):
     model = User
     template_name = 'blog/user.html'
 
-    def get_object(self):
+    def get_object(self, *args, **kwargs):
         return self.request.user
 
     def form_valid(self, form):

@@ -4,7 +4,6 @@ from django.db import models
 
 User = get_user_model()
 
-
 MAX_TITLE_LENGHT = 256
 MAX_LENGHT_FOR_DISPLAY = 20
 
@@ -22,9 +21,6 @@ class PublishedModel(models.Model):
 
     class Meta:
         abstract = True
-
-
-
 
 
 class Category(PublishedModel):
