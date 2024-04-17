@@ -44,6 +44,20 @@ class Category(PublishedModel):
         return self.title[:MAX_LENGHT_FOR_DISPLAY]
 
 
+class Location(PublishedModel):
+    name = models.CharField(
+        'Название места',
+        max_length=MAX_TITLE_LENGHT
+    )
+
+    class Meta:
+        verbose_name = 'местоположение'
+        verbose_name_plural = 'Местоположения'
+
+    def __str__(self):
+        return self.name[:MAX_LENGHT_FOR_DISPLAY]
+
+
 class Post(PublishedModel):
     title = models.CharField(
         'Название',
@@ -61,7 +75,7 @@ class Post(PublishedModel):
         verbose_name='Автор публикации'
     )
     location = models.ForeignKey(
-        'Location',
+        Location,
         on_delete=models.SET_NULL,
         verbose_name='Местоположение',
         null=True,
@@ -88,20 +102,6 @@ class Post(PublishedModel):
         return self.title[:MAX_LENGHT_FOR_DISPLAY]
 
 
-class Location(PublishedModel):
-    name = models.CharField(
-        'Название места',
-        max_length=MAX_TITLE_LENGHT
-    )
-
-    class Meta:
-        verbose_name = 'местоположение'
-        verbose_name_plural = 'Местоположения'
-
-    def __str__(self):
-        return self.name[:MAX_LENGHT_FOR_DISPLAY]
-
-
 class Comment(models.Model):
     text = models.TextField('Текст комментария')
     post = models.ForeignKey(
@@ -117,13 +117,14 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор комментария'
+        verbose_name='Автор комментария',
     )
 
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ('created_at',)
+        default_related_name = 'comments'
 
     def __str__(self):
-        return f"Комментарий пользователя {self.author}"
+        return f'Комментарий пользователя {self.author}'
