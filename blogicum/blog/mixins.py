@@ -1,9 +1,9 @@
-from django.urls import reverse
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
+from django.urls import reverse
 
-from .models import Post, Comment
 from .forms import CommentForm, PostForm
+from .models import Comment, Post
 
 
 class OnlyAuthorMixin(UserPassesTestMixin):
@@ -30,9 +30,16 @@ class PostMixin:
 class CommentMixin:
     model = Comment
     form_class = CommentForm
-    template_name = "blog/comment.html"
+    template_name = 'blog/comment.html'
     pk_field = 'comment_id'
-    pk_url_kwarg = "comment_id"
+    pk_url_kwarg = 'comment_id'
+
+    def get_object(self):
+        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        return get_object_or_404(
+            Comment,
+            pk=self.kwargs.get('comment_id'),
+            post=post)
 
     def get_success_url(self):
         return reverse('blog:post_detail',

@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-
 User = get_user_model()
 
 MAX_TITLE_LENGHT = 256
@@ -107,7 +106,6 @@ class Comment(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comment',
         verbose_name='Публикация'
     )
     created_at = models.DateTimeField(
