@@ -35,11 +35,10 @@ class CommentMixin:
     pk_url_kwarg = 'comment_id'
 
     def get_object(self):
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         return get_object_or_404(
             Comment,
             pk=self.kwargs.get('comment_id'),
-            post=post)
+            post__id=self.kwargs.get('post_id'))
 
     def get_success_url(self):
         return reverse('blog:post_detail',

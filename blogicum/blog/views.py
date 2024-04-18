@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
@@ -15,8 +16,7 @@ from django.views.generic import (
 from .forms import PostForm, CommentForm, ProfileEditForm
 from .models import Category, Comment, Post
 from .mixins import PostMixin, CommentMixin, PostDispatchMixin, OnlyAuthorMixin
-from django.conf import settings
-from .utils import get_posts_queryset
+from .query_utils import get_posts_queryset
 
 User = get_user_model()
 
@@ -38,8 +38,10 @@ class PostUpdateView(PostMixin,
                      UpdateView):
 
     def get_success_url(self):
-        return reverse('blog:post_detail',
-                       kwargs={self.pk_url_kwarg: self.kwargs['post_id']})
+        return reverse(
+            'blog:post_detail',
+            kwargs={self.pk_url_kwarg: self.kwargs[self.pk_url_kwarg]}
+        )
 
 
 class PostDeleteView(PostMixin,
@@ -83,7 +85,7 @@ class ProfileDetailView(ListView):
             return get_posts_queryset(manager=user_profile.posts)
         return get_posts_queryset(
             manager=self.model.objects,
-            show_hidden=True
+            show_hidden=False
         )
 
     def get_context_data(self, **kwargs):
@@ -100,7 +102,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        return reverse('blog:profile', args=[self.request.user])
+        return reverse('blog:profile', args=[self.request.user.username])
 
 
 class PostDetailView(DetailView):
@@ -143,7 +145,7 @@ class CategoryPostsListView(ListView):
         return get_posts_queryset(
             manager=category.posts,
             show_hidden=False,
-            annotate=False
+            annotate=True
         )
 
     def get_context_data(self, *args, **kwargs):
@@ -165,8 +167,10 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('blog:post_detail',
-                       kwargs={self.pk_url_kwarg: self.kwargs['post_id']})
+        return reverse(
+            'blog:post_detail',
+            kwargs={self.pk_url_kwarg: self.kwargs[self.pk_url_kwarg]}
+        )
 
 
 class CommentUpdateView(CommentMixin, OnlyAuthorMixin, UpdateView):
